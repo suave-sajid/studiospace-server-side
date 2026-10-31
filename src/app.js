@@ -1,6 +1,7 @@
 
 import express from "express";
 import cors from "cors";
+import { getDB } from "./config/db.js";
 
 const app = express();
 
@@ -22,6 +23,28 @@ app.get("/api/health", (req, res) => {
     environment: process.env.NODE_ENV,
   });
 });
+
+
+app.get("/api/db-health", async (req, res) => {
+  try {
+    const db = getDB();
+
+    await db.command({ ping: 1 });
+
+    res.status(200).json({
+      success: true,
+      message: "MongoDB is connected!",
+      database: "connected",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+    });
+  }
+});
+
 
 // Root Route
 app.get("/", (req, res) => {
