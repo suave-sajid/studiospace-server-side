@@ -12,7 +12,7 @@ if (!dbName) {
   throw new Error("DB_NAME is missing from environment variables");
 }
 
-const client = new MongoClient(uri, {
+export const client = new MongoClient(uri, {
   serverSelectionTimeoutMS: 5000,
 });
 

@@ -12,7 +12,7 @@ const startServer = async () => {
     // Connect MongoDB first
     await connectDB();
 
-        await createIndexes();
+    await createIndexes();
 
 
     // Start Express after successful DB connection
