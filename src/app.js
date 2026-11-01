@@ -4,6 +4,7 @@ import cors from "cors";
 import { getDB } from "./config/db.js";
 import studioRoutes from "./routes/studio.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import bookingRoutes from "./routes/booking.routes.js";
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 
 app.use("/api/studios", studioRoutes);
 app.use("/api/auth-test", authRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 // Health Check Route
 app.get("/api/health", (req, res) => {

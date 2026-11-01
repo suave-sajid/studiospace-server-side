@@ -17,12 +17,14 @@ const router = Router();
 // Public routes
 router.get("/", getStudios);
 router.get("/featured", getFeaturedStudios);
-router.get("/:id", getStudioById);
 
-// Protected routes
+// Protected routes — /mine must be before /:id
 router.get("/mine", verifyToken, getMyStudios);
 router.post("/", verifyToken, createStudio);
 router.patch("/:id", verifyToken, updateStudio);
 router.delete("/:id", verifyToken, deleteStudio);
+
+// Keep dynamic GET route last
+router.get("/:id", getStudioById);
 
 export default router;
