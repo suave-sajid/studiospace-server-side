@@ -1,8 +1,9 @@
-
+import { z } from "zod";
 import { ObjectId } from "mongodb";
 import { getDB } from "../config/db.js";
 import { COLLECTIONS } from "../config/collections.js";
 import { studioSchema } from "../services/studio.validation.js";
+
 
 // Escape user input before using it in regex
 const escapeRegex = (value) =>
@@ -211,3 +212,164 @@ export const createStudio = async (req, res) => {
     });
   }
 };
+
+
+// GET MY STUDIO LISTINGS
+export const getMyStudios = async (req, res) => {
+  try {
+    const db = getDB();
+
+    const studios = await db
+      .collection(COLLECTIONS.STUDIOS)
+      .find({
+        ownerId: req.user.id,
+      })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.status(200).json({
+      success: true,
+      message: "Your studio listings retrieved successfully",
+      data: studios,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve your studios",
+    });
+  }
+};
+
+// UPDATE STUDIO
+export const updateStudio = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid studio ID",
+      });
+    }
+
+    // Validate only editable fields
+    const updateSchema = studioSchema
+      .omit({
+        gallery: true,
+        amenities: true,
+      })
+      .partial()
+      .extend({
+        gallery: z.array(z.string().url()).optional(),
+        amenities: z.array(z.string().trim().min(1)).optional(),
+      })
+      .refine(
+        (data) => Object.keys(data).length > 0,
+        "At least one field is required"
+      );
+
+    const validation = updateSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: validation.error.issues.map((issue) => ({
+          field: issue.path.join("."),
+          message: issue.message,
+        })),
+      });
+    }
+
+    const db = getDB();
+
+    const studios = db.collection(COLLECTIONS.STUDIOS);
+
+    const studioId = new ObjectId(id);
+
+    // Check ownership
+    const existingStudio = await studios.findOne({
+      _id: studioId,
+      ownerId: req.user.id,
+    });
+
+    if (!existingStudio) {
+      return res.status(404).json({
+        success: false,
+        message: "Studio not found or you are not the owner",
+      });
+    }
+
+    const updateData = {
+      ...validation.data,
+      updatedAt: new Date(),
+    };
+
+    await studios.updateOne(
+      {
+        _id: studioId,
+        ownerId: req.user.id,
+      },
+      {
+        $set: updateData,
+      }
+    );
+
+    const updatedStudio = await studios.findOne({
+      _id: studioId,
+      ownerId: req.user.id,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Studio updated successfully",
+      data: updatedStudio,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update studio",
+    });
+  }
+};
+
+// DELETE STUDIO
+export const deleteStudio = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid studio ID",
+      });
+    }
+
+    const db = getDB();
+
+    const result = await db
+      .collection(COLLECTIONS.STUDIOS)
+      .deleteOne({
+        _id: new ObjectId(id),
+        ownerId: req.user.id,
+      });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Studio not found or you are not the owner",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Studio deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete studio",
+    });
+  }
+};
+

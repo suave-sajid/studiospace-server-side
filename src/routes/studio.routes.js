@@ -6,22 +6,30 @@ import {
   getFeaturedStudios,
   getStudioById,
   createStudio,
+  getMyStudios,
+  updateStudio,
+  deleteStudio,
 } from "../controllers/studio.controller.js";
 
 import { developmentOnly } from "../middleware/developmentOnly.js";
+import { devUser } from "../middleware/devUser.js";
 
 const router = express.Router();
 
-// GET /api/studios
+// Public routes
 router.get("/", getStudios);
-
-// GET /api/studios/featured
 router.get("/featured", getFeaturedStudios);
 
-// POST /api/studios
+// Temporary development routes
+router.get("/mine", devUser, getMyStudios);
+
 router.post("/", developmentOnly, createStudio);
 
-// GET /api/studios/:id
+router.patch("/:id", devUser, updateStudio);
+
+router.delete("/:id", devUser, deleteStudio);
+
+// Single studio
 router.get("/:id", getStudioById);
 
 export default router;
