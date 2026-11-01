@@ -1,5 +1,4 @@
-
-import express from "express";
+import { Router } from "express";
 
 import {
   getStudios,
@@ -11,25 +10,19 @@ import {
   deleteStudio,
 } from "../controllers/studio.controller.js";
 
-import { developmentOnly } from "../middleware/developmentOnly.js";
-import { devUser } from "../middleware/devUser.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
-const router = express.Router();
+const router = Router();
 
 // Public routes
 router.get("/", getStudios);
 router.get("/featured", getFeaturedStudios);
-
-// Temporary development routes
-router.get("/mine", devUser, getMyStudios);
-
-router.post("/", developmentOnly, createStudio);
-
-router.patch("/:id", devUser, updateStudio);
-
-router.delete("/:id", devUser, deleteStudio);
-
-// Single studio
 router.get("/:id", getStudioById);
+
+// Protected routes
+router.get("/mine", verifyToken, getMyStudios);
+router.post("/", verifyToken, createStudio);
+router.patch("/:id", verifyToken, updateStudio);
+router.delete("/:id", verifyToken, deleteStudio);
 
 export default router;

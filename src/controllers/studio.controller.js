@@ -183,7 +183,7 @@ export const createStudio = async (req, res) => {
 
       // Temporary development owner.
       // Replace with authenticated user ID later.
-      ownerId: "development-test-owner",
+      ownerId: req.user.id,
 
       rating: 0,
       reviewCount: 0,
