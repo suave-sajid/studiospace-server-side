@@ -6,6 +6,8 @@ import studioRoutes from "./routes/studio.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
+import wishlistRoutes from "./routes/wishlist.routes.js";
+
 
 const app = express();
 
@@ -23,6 +25,8 @@ app.use("/api/studios", studioRoutes);
 app.use("/api/auth-test", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+
 
 // Health Check Route
 app.get("/api/health", (req, res) => {
